@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "Launching Primary..."
+
+# Configure:
+export MONGO_URL="mongodb://localhost:27017/micros"
+
+# Cluster:
+export CLUSTER_DISCOVERY_URL="mongodb://localhost:27017/micros"
+export CLUSTER_ENDPOINT_URL="http://localhost:3000"
+export CLUSTER_SERVICE="primary"
+
+meteor run --port 3000
