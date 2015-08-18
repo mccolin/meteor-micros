@@ -2,9 +2,7 @@
 if (Meteor.isServer) {
 
   var servicesMap = {};
-  var serviceCall = function(serviceName, methodName /* arg1, arg2, ... */) {
-    // if (! _.isString(serviceName) ) return;
-    // if (! _.isString(methodName) ) return;
+  var serviceCall = function(serviceName, methodName, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) {
     check(serviceName, String);
     check(methodName, String);
     console.log("Primary will make a call to Service:", serviceName, "Method:", methodName);
@@ -12,10 +10,16 @@ if (Meteor.isServer) {
     if ( service ) {
       console.log(" -> Will make call. Service", serviceName, "is defined.");
       console.log(" -> Arguments to call:", [].slice.call(arguments, 2));
-      service.call(this, [].slice.call(arguments, 1));
+      return service.call(methodName, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     } else
       console.log(" -> Cannot make call. Service", serviceName, "not registered with primary");
   };
+
+  var primary = Cluster.discoverConnection('primary');
+  Meteor.setTimeout( function() {
+    var primaryPing = primary.call('ping');
+    console.log("Called primary.ping from primary: ", primaryPing);
+  }, 1500);
 
   // var extensions = Cluster.discoverConnection('extensions');
 
