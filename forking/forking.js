@@ -20,6 +20,15 @@ if (Meteor.isServer) {
 
   Meteor.startup(function () {
 
+    // Set cluster instance discovery source:
+    var discoveryUrl = process.env['CLUSTER_DISCOVERY_URL'] || "mongodb://localhost:27017/micros";
+    Cluster.connect(discoveryUrl, {selfWeight: 1});
+
+    // Register this process as instance in cluster:
+    var instanceName = cluster.isMaster ? "arbiter" : "worker"+process.pid;
+    Cluster.register(instanceName, {'endpoint': 'http://localhost:'+process.env.PORT});
+
+    
     if (cluster.isMaster) {
       console.log("Arbiter has started. PID:", process.pid, "Port:", process.env.PORT);
 
@@ -42,6 +51,12 @@ if (Meteor.isServer) {
 
     } else {
       console.log("Worker has started. PID:", process.pid, "Port:", process.env.PORT);
+
+      var services = ['accounts', 'import', 'export', 'funnel', 'verify'];
+      var serviceName = services[ Math.floor(Math.random()*services.length) ];
+
+      var arbiter = Cluster.discoverConnection('arbiter');
+      arbiter.call('register', serviceName, instanceName);
     }
 
 
